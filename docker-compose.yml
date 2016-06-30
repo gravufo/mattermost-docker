@@ -1,5 +1,7 @@
 db:
   build: db
+  container_name: mattermost-db
+  restart: always
   volumes:
     - ./volumes/db/var/lib/postgresql/data:/var/lib/postgresql/data
     - /etc/localtime:/etc/localtime:ro
@@ -11,23 +13,17 @@ db:
   #  - AWS_REGION=us-east-1
 app:
   build: app
+  container_name: mattermost-prod
+  restart: always
   links:
     - db:db
   volumes:
     - ./volumes/app/mattermost/config:/mattermost/config:rw
     - ./volumes/app/mattermost/data:/mattermost/data:rw
     - /etc/localtime:/etc/localtime:ro
-web:
-  build: web
   ports:
-    - "80:80"
-    - "443:443"
-  links:
-    - app:app
-  volumes:
-      # This directory must have cert files
-    - ./volumes/web/cert:/cert:ro
-    - /etc/localtime:/etc/localtime:ro
+    - "8065:80"
   environment:
-    - MATTERMOST_ENABLE_SSL=false
-    - PLATFORM_PORT_80_TCP_PORT=80
+    - VIRTUAL_HOST=chat.polycancer.org
+    - LETSENCRYPT_HOST=chat.polycancer.org
+    - LETSENCRYPT_EMAIL=admin@polycancer.org
